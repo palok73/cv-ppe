@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# footage, datasets, model weights: large and/or sensitive
+data/*
+!data/.gitkeep
+eval/clips/*
+!eval/clips/.gitkeep
+*.pt
+*.onnx
+*.engine
+*.mp4
+*.mkv
+
+# personal Claude config
+CLAUDE.local.md
+.claude/settings.local.json

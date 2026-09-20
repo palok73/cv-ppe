@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pytest *)",
+      "Bash(python eval/run.py*)",
+      "Bash(ruff check *)",
+      "Bash(ruff format *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ],
+    "deny": [
+      "Edit(data/**)",
+      "Edit(eval/clips/**)",
+      "Read(./.env)"
+    ]
+  }
+}
