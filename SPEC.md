@@ -99,6 +99,16 @@ ARC integration, multi-tenancy, person identification, siren/relay outputs, othe
 - Fast-alarm latency <= 5 s measured end to end from frame capture to notification send.
 - All measured by `python eval/run.py`.
 
+## Eval set format (`eval/clips/labels.json`, gitignored)
+Files: `eval/scoring.py` (loading, matching, metrics), `eval/run.py` (CLI, acceptance gates), `tests/test_eval_scoring.py`.
+- A **scenario** is one staged session: `id`, `condition` (`day` | `dusk` | `night_ir`), `duration_s`, `cameras` (camera id -> clip path relative to the labels file), optional timezone-aware `epoch` (default 2000-01-01T00:00:00Z), and `violations`.
+- A **violation** is one person without a helmet in a time window: `id`, `person` (anonymous key such as `p1`, only used to tell people apart, never a name), `start_s`, `end_s` (seconds from scenario start), optional `cameras` (default: all of the scenario's cameras).
+- Pipeline contract: `--pipeline module:callable`, called as `f(scenario) -> list[Incident]`. Incident times are `epoch` + position in the clip (capture time, not processing time).
+- **Matching:** an incident and a violation are candidates when they share a camera and their windows overlap (violation widened by `--tolerance`, default 3 s). A one-to-one matching decides which incident found which violation. Leftover incidents are **duplicates** (overlap an already-found violation) or **false alarms** (overlap nothing). A missed violation that overlaps an incident matched to a different person is a **suspected merge**.
+- **Metrics** overall, per condition and per camera: recall, precision (1 - false alarms / incidents), incidents per violation, suspected merges, false alarms per camera-day.
+- **Gates** (exit 1 if any fails; exit 2 if the eval cannot run): day recall >= 0.95, day precision >= 0.90, incidents per violation <= 1.2, suspected merges = 0, false alarms per camera-day <= 1 (only checked once the labels cover >= 24 camera-hours; staged clips skip it). Dusk and night/IR are reported but not gated until the M1 baseline sets targets.
+- Not measured yet: fast-alarm latency (needs the notifier from M2), calibrated vs uncalibrated dedup split.
+
 ## Still open (none block work on M0)
 1. Is a Slovak lawyer / DPO engaged? Required before any recording on a real site.
 2. Which SMS gateway (decided at M2).
