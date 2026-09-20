@@ -119,6 +119,12 @@ def test_load_labels_defaults_violation_cameras_to_all(tmp_path):
     assert s.clips["cam1"] == tmp_path / "a.mp4"
 
 
+def test_load_labels_accepts_utf8_bom(tmp_path):
+    path = write_labels(tmp_path)
+    path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
+    assert load_labels(path)[0].scenario_id == "s1"
+
+
 @pytest.mark.parametrize(
     "override",
     [

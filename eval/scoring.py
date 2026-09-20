@@ -98,7 +98,7 @@ class Counts:
 def load_labels(path: Path) -> list[Scenario]:
     """Parse and validate a labels file; clip paths resolve relative to the file."""
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
+        raw = json.loads(path.read_text(encoding="utf-8-sig"))  # tolerate a Windows BOM
     except json.JSONDecodeError as exc:
         raise LabelError(f"{path}: invalid JSON: {exc}") from exc
     if not isinstance(raw, dict) or raw.get("version") != LABELS_VERSION:
