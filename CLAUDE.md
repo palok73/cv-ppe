@@ -3,6 +3,10 @@
 Multi-camera helmet (PPE) monitoring: ingest streams -> person trigger -> track -> helmet check -> cross-camera dedup -> event/alarm.
 Read `SPEC.md` for requirements. Keep this file under 200 lines.
 
+## Scope
+Construction sites in Slovakia (EU rules), single site, 5-16 cameras, on-prem GPU; ARC/multi-tenant out of scope.
+Must work offline. Night/IR and dirty lenses are in scope. Apache/MIT-licensed models only (no AGPL/GPL, so no Ultralytics YOLO).
+
 ## Commands
 - Install: `pip install -e ".[dev]"`
 - Test: `pytest -q` (prefer a single file: `pytest tests/test_x.py -q`)
