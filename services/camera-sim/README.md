@@ -9,41 +9,22 @@ notifications in the two formats the ingest stage's SPEC anticipates
 It is a test double, not part of the core pipeline: it lives outside
 `src/ppe_monitor/` and ships as its own installable package.
 
-## Why it looks like this
+**For the full reasoning behind these choices** — why RTSP `listen` mode is
+the default, how the Hikvision ISAPI and ONVIF motion pushes actually work,
+a code walkthrough, and known limitations — see [`DESIGN.md`](DESIGN.md).
+The short version:
 
-- **RTSP `listen` mode is the default**, not `publish`. Real Hikvision
-  cameras are RTSP *servers* — an NVR/VMS connects to
-  `rtsp://<camera>:554/Streaming/Channels/101` (main stream, channel×100+1)
-  and `.../102` (sub stream, channel×100+2). `listen` mode reproduces exactly
-  that: the simulator opens those paths and waits for the pipeline to
-  connect. `publish` mode (push to an RTSP URL you already run, e.g.
-  MediaMTX) is also supported for setups that need it, per-stream.
-- **Looping is seamless for `order: sequential`** (a single long-lived ffmpeg
-  process loops an ffconcat playlist forever) but **reconnects once per pass
-  for `order: random`** (each pass is a freshly shuffled, finite playlist;
-  ffmpeg exits at the end of the pass and the supervisor restarts it with a
-  new shuffle). This is a deliberate trade-off to get true per-pass
-  randomization instead of a fixed shuffled-once order — see
-  `src/camera_sim/rtsp.py`.
-- **Motion notifications mimic two real push mechanisms**, not a pull/poll
-  API, matching "push to my endpoint" test setups:
-  - *Hikvision ISAPI*: a camera configured with an HTTP Listening host
-    (`PUT /ISAPI/Event/notification/httpHosts/<id>`) POSTs an
-    `EventNotificationAlert` XML body to that host on every event, optionally
-    as `multipart/mixed` with a JPEG snapshot attached. `xml_version: "1.0"`
-    reproduces the richer schema (`ipAddress`/`macAddress`/
-    `DetectionRegionList`); `"2.0"` reproduces the simplified one.
-  - *ONVIF*: a device with an active push subscription sends a SOAP
-    `wsnt:Notify` carrying a `tns1:VideoSource/MotionAlarm` topic and a
-    boolean `tt:Data/SimpleItem[@Name='State']` to the subscriber's endpoint.
-    The WS-Subscription handshake itself isn't implemented — the target URL
-    is configured directly, as if a subscription already exists.
-  - Both are **best-effort reproductions** of publicly documented formats,
-    not certified against real hardware or Hikvision's SDK. Don't rely on
-    byte-exact parity; do rely on them exercising the same code paths a real
-    push would.
-  - Each motion "burst" fires `active`, holds for `active_duration_seconds`,
-    then fires `inactive`, on every enabled channel.
+- RTSP `listen` mode (default) makes the simulator act as an RTSP *server*,
+  like a real Hikvision camera, at `.../Streaming/Channels/101` (main) and
+  `.../102` (sub). `publish` mode is also available per-stream for pushing
+  into an existing RTSP server instead.
+- `order: sequential` loops seamlessly; `order: random` reshuffles and
+  briefly reconnects once per pass — a deliberate trade-off, not a bug.
+- Motion notifications mimic two real push mechanisms: a Hikvision ISAPI
+  "HTTP Listening" POST (`EventNotificationAlert` XML, optionally with a
+  JPEG snapshot), and an ONVIF SOAP `wsnt:Notify`. Both are best-effort
+  reproductions of publicly documented formats, not verified against real
+  hardware.
 
 ## Requirements
 

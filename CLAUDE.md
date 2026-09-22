@@ -26,7 +26,7 @@ Must work offline. Night/IR and dirty lenses are in scope. Apache/MIT-licensed m
 - Detector architecture is fixed to RT-DETR/RF-DETR/YOLOX (Apache/MIT) per Scope above; `ppe/`'s current checkpoint is RFDETRNano, trained by `training/train_helmet_detector.py` onto `data/models/` (gitignored — train one before running `ppe/` for real).
 
 ## Dev tools
-- `services/camera-sim/`: standalone service (own `pyproject.toml`, install/test independently) that simulates Hikvision-style cameras — loops local video over RTSP and fires ISAPI/ONVIF-style motion pushes — for testing ingest without real cameras. Not a pipeline stage; see its README.
+- `services/camera-sim/`: standalone service (own `pyproject.toml`, install/test independently) that simulates Hikvision-style cameras — loops local video over RTSP and fires ISAPI/ONVIF-style motion pushes — for testing ingest without real cameras. Not a pipeline stage; see its README for usage, `DESIGN.md` for why/how it works.
 - `training/train_helmet_detector.py`: fine-tunes RFDETRNano on a Roboflow-format COCO dataset (see `docs/licenses.md` for which datasets and why). Offline tooling, not a pipeline stage.
 
 ## Workflow
