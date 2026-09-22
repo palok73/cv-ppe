@@ -9,6 +9,8 @@ Must work offline. Night/IR and dirty lenses are in scope. Apache/MIT-licensed m
 
 ## Commands
 - Install: `pip install -e ".[dev]"`
+- Train the helmet detector: `pip install -e ".[train]"` (adds torch/rfdetr/lightning; heavy, CPU-only fine here), then `python training/train_helmet_detector.py`
+- `ppe/`'s `HelmetDetector` needs `pip install -e ".[detect]"` (rfdetr for inference only, no training deps)
 - Test: `pytest -q` (prefer a single file: `pytest tests/test_x.py -q`)
 - Lint: `ruff check . && ruff format --check .`
 - Eval (the source of truth for "does it work"): `python eval/run.py`
@@ -20,9 +22,12 @@ Must work offline. Night/IR and dirty lenses are in scope. Apache/MIT-licensed m
 - Per-camera tracking emits one event per track, never per frame.
 - Bias toward duplicates over missed violations when dedup is uncertain.
 - Detection runs on the low-res sub-stream; the main stream is used only for evidence clips.
+- `Detection` carries a bbox but no pixels, so `ppe.check_helmet()` takes a `frames: dict[(camera_id, captured_at), Frame]` alongside the `Track` to crop from. Inconclusive frames (model returns nothing) are skipped, not voted "no helmet"; a track with too little evidence defaults to `has_helmet=False` rather than guessing positive.
+- Detector architecture is fixed to RT-DETR/RF-DETR/YOLOX (Apache/MIT) per Scope above; `ppe/`'s current checkpoint is RFDETRNano, trained by `training/train_helmet_detector.py` onto `data/models/` (gitignored — train one before running `ppe/` for real).
 
 ## Dev tools
 - `services/camera-sim/`: standalone service (own `pyproject.toml`, install/test independently) that simulates Hikvision-style cameras — loops local video over RTSP and fires ISAPI/ONVIF-style motion pushes — for testing ingest without real cameras. Not a pipeline stage; see its README.
+- `training/train_helmet_detector.py`: fine-tunes RFDETRNano on a Roboflow-format COCO dataset (see `docs/licenses.md` for which datasets and why). Offline tooling, not a pipeline stage.
 
 ## Workflow
 - After a series of changes: run lint, the relevant tests, then `python eval/run.py`.
