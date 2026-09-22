@@ -1,0 +1,50 @@
+# Example config for camera-sim.
+# See ../README.md for the full field reference.
+
+cameras:
+  - id: cam1
+    channel: 1 # Hikvision-style channel number -> /Streaming/Channels/101, /102
+    clips_dir: ./clips/cam1 # local video files to loop (.mp4/.mkv/.avi/.mov/.ts)
+    order: sequential # sequential | random
+
+    streams:
+      main:
+        mode: listen # listen: act as an RTSP server, like a real camera (default)
+        bind_host: 0.0.0.0
+        bind_port: 8554
+        path: /Streaming/Channels/101
+        # resolution / bitrate_kbps left unset -> stream the source file as-is (copy).
+      sub:
+        mode: listen
+        bind_host: 0.0.0.0
+        bind_port: 8555
+        path: /Streaming/Channels/102
+        resolution: "640x360" # detection sub-stream: downscaled + re-encoded
+        bitrate_kbps: 512
+
+      # Alternative: push into an existing RTSP server (e.g. MediaMTX) instead
+      # of listening:
+      # main:
+      #   mode: publish
+      #   target_url: "rtsp://localhost:8554/cam1"
+
+    motion:
+      enabled: true
+      channels: [hikvision, onvif] # either or both
+      interval_seconds: [15, 60] # random gap between motion bursts; a single
+      #   number instead of [lo, hi] fires at a fixed interval
+      active_duration_seconds: 3.0
+
+      hikvision:
+        target_url: "http://127.0.0.1:9000/webhook/hikvision-motion"
+        include_snapshot: true
+        xml_version: "1.0" # "1.0" (ipAddress/mac/DetectionRegionList) | "2.0" (simplified)
+        device_ip: 10.10.10.101
+        device_port: 80
+        device_mac: "c4:79:ba:11:22:01"
+        protocol: HTTP
+
+      onvif:
+        target_url: "http://127.0.0.1:9000/webhook/onvif-motion"
+        producer_address: "http://10.10.10.101/onvif/device_service"
+        video_source_token: "VideoSourceToken"

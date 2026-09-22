@@ -21,6 +21,9 @@ Must work offline. Night/IR and dirty lenses are in scope. Apache/MIT-licensed m
 - Bias toward duplicates over missed violations when dedup is uncertain.
 - Detection runs on the low-res sub-stream; the main stream is used only for evidence clips.
 
+## Dev tools
+- `services/camera-sim/`: standalone service (own `pyproject.toml`, install/test independently) that simulates Hikvision-style cameras — loops local video over RTSP and fires ISAPI/ONVIF-style motion pushes — for testing ingest without real cameras. Not a pipeline stage; see its README.
+
 ## Workflow
 - After a series of changes: run lint, the relevant tests, then `python eval/run.py`.
 - Do not report a detection change as an improvement without eval numbers (precision/recall before vs after).

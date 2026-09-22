@@ -1,0 +1,29 @@
+[project]
+name = "camera-sim"
+version = "0.1.0"
+description = "Standalone service that simulates Hikvision-style IP cameras (looped RTSP video + ISAPI-style motion push) for testing the cv-ppe ingest pipeline"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[project.scripts]
+camera-sim = "camera_sim.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
